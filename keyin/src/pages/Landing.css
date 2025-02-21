@@ -1,0 +1,182 @@
+/* Общие стили */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(120deg, #bdc3c7, #2c3e50); /* Каменный цвет с серыми оттенками */
+    color: #2c3e50;
+}
+
+/* Контейнер для всей страницы */
+.landing-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #e0e0e0;
+    position: relative;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+/* Название игры */
+.game-title {
+    font-family: 'Rock Salt', cursive; /* Пример шрифта с интересным стилем */
+    font-size: 3rem;
+    color: #34495e;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Оверлей */
+.overlay {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 20px;
+    background: rgba(255, 255, 255, 0.9); /* Белый фон */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.title {
+    font-size: 2.2rem;
+    color: #34495e;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: #7f8c8d;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+/* Кнопка начала расследования */
+.start-button {
+    background-color: #7f8c8d;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.start-button:hover {
+    background-color: #34495e;
+}
+
+/* Модальные окна (убрали полупрозрачность) */
+.instruction-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    z-index: 10;
+    opacity: 1; /* Убираем полупрозрачность */
+}
+
+.instruction-modal h2 {
+    font-size: 1.8rem;
+    color: #e74c3c;
+    margin-bottom: 15px;
+}
+
+.instruction-modal p {
+    font-size: 1rem;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.agree-button {
+    background-color: #34495e;
+    color: white;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.agree-button:hover {
+    background-color: #2c3e50;
+}
+
+/* Эффект затемнения */
+.landing-container .overlay {
+    z-index: 5;
+}
+
+.instruction-modal + .overlay {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Мобильные стили */
+@media (max-width: 600px) {
+    .game-title {
+        font-size: 2.5rem;
+    }
+
+    .title {
+        font-size: 1.8rem;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .start-button {
+        font-size: 1rem;
+        padding: 10px 25px;
+    }
+
+    .instruction-modal h2 {
+        font-size: 1.5rem;
+    }
+
+    .instruction-modal p {
+        font-size: 0.9rem;
+    }
+
+    .agree-button {
+        padding: 10px 20px;
+    }
+}
+
+/* Для планшетов и десктопов */
+@media (min-width: 768px) {
+    .landing-container {
+        padding: 0 50px;
+    }
+
+    .overlay {
+        max-width: 700px;
+    }
+
+    .title {
+        font-size: 2.5rem;
+    }
+
+    .subtitle {
+        font-size: 1.2rem;
+    }
+}
