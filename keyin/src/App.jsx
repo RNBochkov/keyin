@@ -6,10 +6,10 @@ import Landing from './pages/Landing';
 function App() {
   return (
     <Router>
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/samaragoroad" element={<Game />} />
-    </Routes>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/samaragoroad" element={<Game />} />
+      </Routes>
     </Router>
   );
 }
