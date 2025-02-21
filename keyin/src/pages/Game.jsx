@@ -1,7 +1,11 @@
+import GameMap from "../components/GameMap";
+import "./Game.css"
+
 function Game() {
     return (
-      <h1> Это ГЕЙМ</h1>
+      <div className="map-container">
+        <GameMap />
+      </div>
     );
-
-  }
-  export default Game;
+}
+export default Game;
