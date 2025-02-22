@@ -1,29 +1,33 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Icon } from 'leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import './GameMap.css'
 
-const points = [
-  { id: 1, name: 'Сюда нам надо', coords: [ 53.1860722, 50.0927639] },
-  { id: 2, name: 'Точка 2', coords: [53.210, 50.120] },
-];
-
-const customIcon = new Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/32/684/684908.png', 
-  iconSize: [32, 32],
+// Фикс для иконок маркеров
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-function GameMap() {
+function GameMap({ currentPoint }) {
     return (
-      <MapContainer center={[53.1959, 50.1002]} zoom={13} style={{ height: '500px', width: '100%' }}>
+    <MapContainer
+      center={currentPoint?.coordinates || [53.1959, 50.1002]}
+      zoom={13}
+      className="map-container"
+    >
       <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="&copy; OpenStreetMap contributors"
       />
-      {points.map((point) => (
-        <Marker key={point.id} position={point.coords} icon={customIcon}>
-          <Popup>{point.name}</Popup>
+
+      {currentPoint && (
+        <Marker position={currentPoint.coordinates}>
+          <Popup>{currentPoint.text}</Popup>
         </Marker>
-      ))}
+      )}
     </MapContainer>
     );
 }
