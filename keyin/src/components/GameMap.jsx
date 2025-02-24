@@ -1,5 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon } from 'leaflet';
+import { useMap } from 'react-leaflet/hooks'
+import { useState, useEffect } from "react";
 // import L from 'leaflet';
 import marker from '../assets/marker.png'
 import 'leaflet/dist/leaflet.css';
@@ -15,13 +17,40 @@ import './GameMap.css'
 
 const customIcon = new Icon({
   iconUrl: marker,
-  iconSize: [50,50]
+  iconSize: [64,64]
 });
 
+// Компонент для следования карты за пользователем
+function MoveMap({ position }) {
+  const map = useMap();
+  useEffect(() => {
+    if (position) {
+      map.setView(position, map.getZoom());
+    }
+  }, [position, map]);
+  return null;
+}
+
 function GameMap({ currentPoint }) {
+    const [userPosition, setUserPosition] = useState(null);
+
+     useEffect(() => {
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        setUserPosition([position.coords.latitude, position.coords.longitude]);
+      },
+      (error) => {
+        console.error("Ошибка геолокации:", error);
+      },
+      { enableHighAccuracy: true, maximumAge: 0 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
     return (
     <MapContainer
-      center={currentPoint?.coordinates || [53.1959, 50.1002]}
+      center={userPosition || currentPoint?.coordinates || [53.1959, 50.1002]}
       zoom={14}
       className="map-container"
     >
@@ -31,9 +60,17 @@ function GameMap({ currentPoint }) {
         url='https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.png'
       />
 
+      <MoveMap position={userPosition} />
+
       {currentPoint && (
         <Marker position={currentPoint.coordinates} icon={customIcon}>
           <Popup>{currentPoint.text}</Popup>
+        </Marker>
+      )}
+
+      {userPosition && (
+        <Marker position={userPosition}>
+          <Popup>Вы здесь</Popup>
         </Marker>
       )}
     </MapContainer>
