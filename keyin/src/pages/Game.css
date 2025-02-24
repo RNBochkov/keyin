@@ -1,10 +1,22 @@
-.controls-container {
+.game-container {
+    height: 100vh;
     display: flex;
+    flex-direction: column;
+}
+
+.controls-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 10px;
     padding: 10px;
+    width: 100%;
 }
 
 .map-button {
+    width: 100px;
+    height: 100px;
     padding: 10px;
     cursor: pointer;
 }

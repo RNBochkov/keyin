@@ -69,7 +69,9 @@ function Game() {
   };
 
     return (
-      <div>
+    <div className="game-container">
+      <GameMap currentPoint={points[currentIndex]} />
+
       <div className="controls-container">
         <button 
           className="map-button"
@@ -110,7 +112,6 @@ function Game() {
 
       {isHistoryOpen && <div className="modal-overlay" />}
 
-      <GameMap currentPoint={points[currentIndex]} />
     </div>
     );
 }

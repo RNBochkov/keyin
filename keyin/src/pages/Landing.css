@@ -28,6 +28,9 @@ body {
     background-repeat: no-repeat;
     box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
     filter: sepia(0.3) contrast(1.1) brightness(0.9);
+    padding: 20px;
+    text-align: justify;
+    gap: 20px;
 }
 
 
@@ -61,7 +64,7 @@ body {
     font-family: 'Cinzel Decorative', serif;
     font-size: 3rem;
     color: #d4c4a9;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     letter-spacing: 3px;
     position: absolute;
     top: 20px;
@@ -74,11 +77,11 @@ body {
     background: url('data:image/svg+xml;utf8,<svg width="400" height="120" xmlns="http://www.w3.org/2000/svg"><path d="M20 60h360" stroke="%238a7c6e" stroke-width="2" stroke-opacity="0.3"/></svg>');
     border: 3px solid #8a7c6e;
     border-radius: 10px;
+    max-width: 90%;
 }
 
 .overlay {
-    text-align: justify;
-    max-width: 600px;
+    max-width: min(90%,600px);
     margin: 0 20px;
     background: rgba(42, 39, 39, 0.8);
     padding: 30px;
@@ -187,9 +190,7 @@ body {
     padding: 40px;
     border-radius: 8px;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 0, 0, 0.4);
-    width: 80%;
-    max-width: 450px;
-    text-align: center;
+    max-width: min(80%, 450px);
     z-index: 9999; 
     border: 3px solid #8a7c6e;
 }
@@ -199,7 +200,7 @@ body {
 /* Адаптивность */
 @media (max-width: 600px) {
     .game-title {
-        font-size: 2.5rem;
+        font-size: 1.5rem;
     }
 
     .start-button, .agree-button {
