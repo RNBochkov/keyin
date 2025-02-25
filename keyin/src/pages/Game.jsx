@@ -36,7 +36,8 @@ function Game() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [generatedPoint, setGeneratedPoint] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const maxDistance = 100;
+  const [isNearPoint, setIsNearPoint] = useState(false);
+  const maxDistance = 500;
 
   // Загрузка истории и текущего индекса
   useEffect(() => {
@@ -81,47 +82,59 @@ function Game() {
     }
   }, [isLoaded, generatedPoint, currentIndex]);
 
-  const handleNextPoint = async () => {
-    try {
-      const position = await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
-      });
+  useEffect(() => {
+    const checkUserProximity = async () => {
+      try {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
 
-      const userCoords = [
-        position.coords.latitude,
-        position.coords.longitude
-      ];
+        const userCoords = [
+          position.coords.latitude,
+          position.coords.longitude,
+        ];
 
-      const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex-1];
+        const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
 
-      if (!currentPoint) return;
-
-      const distance = checkDistance(...userCoords, ...currentPoint.coordinates);
-
-      if (distance <= maxDistance) {
-        const newHistory = [...history, {
-          id: currentPoint.id,
-          text: currentPoint.text
-        }];
-        
-        setHistory(newHistory);
-        localStorage.setItem('pointsHistory', JSON.stringify(newHistory));
-
-        if (currentIndex === 0) {
-          localStorage.removeItem("generatedPoint"); // Удаляем точку из `localStorage`, чтобы она не появлялась снова
-          setGeneratedPoint(null);
+        if (currentPoint) {
+          const distance = checkDistance(...userCoords, ...currentPoint.coordinates);
+          setIsNearPoint(distance <= maxDistance);
         }
+      } catch (error) {
+        console.error("Ошибка получения геолокации:", error);
+      }
+    };
 
-        const newIndex = currentIndex + 1;
-        setCurrentIndex(newIndex);
-        localStorage.setItem("currentIndex", newIndex);
-      }
-      else {
-        console.log('Ну да я же дома');
-      }
-    } catch (error) {
-      alert('Ошибка получения геолокации');
+    const interval = setInterval(checkUserProximity, 2000); // Проверять каждые 5 секунд
+
+    return () => clearInterval(interval);
+  }, [isLoaded, generatedPoint, currentIndex]);
+
+  const handleNextPoint = () => {
+    if (!isNearPoint) return;
+
+    setIsNearPoint(false);
+
+    const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
+
+    if (!currentPoint) return;
+
+    const newHistory = [
+      ...history,
+      { id: currentPoint.id, text: currentPoint.text },
+    ];
+
+    setHistory(newHistory);
+    localStorage.setItem("pointsHistory", JSON.stringify(newHistory));
+
+    if (currentIndex === 0) {
+      localStorage.removeItem("generatedPoint");
+      setGeneratedPoint(null);
     }
+
+    const newIndex = currentIndex + 1;
+    setCurrentIndex(newIndex);
+    localStorage.setItem("currentIndex", newIndex);
   };
 
   const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
@@ -131,18 +144,15 @@ function Game() {
       {currentPoint && <GameMap currentPoint={currentPoint} />}
 
       <div className="controls-container">
-        <button 
-          className="map-button"
-          onClick={handleNextPoint}
-          disabled={currentIndex >= pointsData.length}
-        >
-          {currentIndex > pointsData.length ? 'Готово!' : 'Проверить'}
-        </button>
+        {isNearPoint ? (
+          <button className="map-button" onClick={handleNextPoint}>
+            Узнать историю
+          </button>
+        ) : (
+          <p className="info-text">Пройдите до следующей точки для продолжения сюжета</p>
+        )}
         
-        <button
-          className="map-button"
-          onClick={() => setIsHistoryOpen(true)}
-        >
+        <button className="map-button" onClick={() => setIsHistoryOpen(true)}>
           История
         </button>
       </div>
@@ -169,7 +179,6 @@ function Game() {
       )}
 
       {isHistoryOpen && <div className="modal-overlay" />}
-
     </div>
     );
 }
