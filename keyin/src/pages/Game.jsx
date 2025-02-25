@@ -1,12 +1,13 @@
 import GameMap from "../components/GameMap";
 import { useState, useEffect } from 'react';
 import "./Game.css"
+import pointsData from "../data/points.json";
 
-const points = [
-  { id: 1, text: 'Дом родимый дом', coordinates: [53.2248388, 50.2708778]},
-  { id: 2, text: 'Сюда нам надо', coordinates: [53.1860722, 50.0927639] },
-  { id: 3, text: 'Точка 2', coordinates: [53.210, 50.120] },
-];
+// const pointsData = [
+//   { id: 1, text: 'Дом родимый дом', coordinates: [53.2248388, 50.2708778]},
+//   { id: 2, text: 'Сюда нам надо', coordinates: [53.1860722, 50.0927639] },
+//   { id: 3, text: 'Точка 2', coordinates: [53.210, 50.120] },
+// ];
 
 const checkDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371e3;
@@ -34,6 +35,7 @@ function Game() {
   const [history, setHistory] = useState([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [generatedPoint, setGeneratedPoint] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
   const maxDistance = 100;
 
   // Загрузка истории и текущего индекса
@@ -52,11 +54,13 @@ function Game() {
     if (savedGeneratedPoint) {
       setGeneratedPoint(JSON.parse(savedGeneratedPoint));
     }
+
+    setIsLoaded(true); // Даем сигнал, что данные загружены
   }, []);
 
   // Генерация первой точки, если её нет в `localStorage`
   useEffect(() => {
-    if (!generatedPoint && currentIndex === 0) {
+    if (isLoaded && !generatedPoint && currentIndex === 0) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const newPoint = {
@@ -75,7 +79,7 @@ function Game() {
         }
       );
     }
-  }, [generatedPoint, currentIndex]);
+  }, [isLoaded, generatedPoint, currentIndex]);
 
   const handleNextPoint = async () => {
     try {
@@ -88,7 +92,7 @@ function Game() {
         position.coords.longitude
       ];
 
-      const currentPoint = currentIndex === 0 ? generatedPoint : points[currentIndex-1];
+      const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex-1];
 
       if (!currentPoint) return;
 
@@ -120,7 +124,7 @@ function Game() {
     }
   };
 
-  const currentPoint = currentIndex === 0 ? generatedPoint : points[currentIndex - 1];
+  const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
 
     return (
     <div className="game-container">
@@ -130,9 +134,9 @@ function Game() {
         <button 
           className="map-button"
           onClick={handleNextPoint}
-          disabled={currentIndex >= points.length}
+          disabled={currentIndex >= pointsData.length}
         >
-          {currentIndex >= points.length ? 'Готово!' : 'Проверить'}
+          {currentIndex > pointsData.length ? 'Готово!' : 'Проверить'}
         </button>
         
         <button
