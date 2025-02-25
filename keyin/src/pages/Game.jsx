@@ -37,7 +37,7 @@ function Game() {
   const [generatedPoint, setGeneratedPoint] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isNearPoint, setIsNearPoint] = useState(false);
-  const maxDistance = 500;
+  const maxDistance = 100;
 
   // Загрузка истории и текущего индекса
   useEffect(() => {

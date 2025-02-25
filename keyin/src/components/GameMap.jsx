@@ -4,6 +4,7 @@ import { useMap } from 'react-leaflet/hooks'
 import { useState, useEffect } from "react";
 // import L from 'leaflet';
 import marker from '../assets/marker.png'
+import heromarker from '../assets/heromarker.png'
 import 'leaflet/dist/leaflet.css';
 import './GameMap.css'
 
@@ -15,8 +16,13 @@ import './GameMap.css'
 //   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 // });
 
-const customIcon = new Icon({
+const customPointIcon = new Icon({
   iconUrl: marker,
+  iconSize: [64,64]
+});
+
+const customHeroIcon = new Icon({
+  iconUrl: heromarker,
   iconSize: [64,64]
 });
 
@@ -63,13 +69,13 @@ function GameMap({ currentPoint }) {
       <MoveMap position={userPosition} />
 
       {currentPoint && (
-        <Marker position={currentPoint.coordinates} icon={customIcon}>
+        <Marker position={currentPoint.coordinates} icon={customPointIcon}>
           <Popup>{currentPoint.text}</Popup>
         </Marker>
       )}
 
       {userPosition && (
-        <Marker position={userPosition}>
+        <Marker position={userPosition} icon={customHeroIcon}>
           <Popup>Вы здесь</Popup>
         </Marker>
       )}
