@@ -23,18 +23,59 @@ const checkDistance = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
+// Генерация случайной точки рядом с текущим местоположением
+const getRandomNearbyPoint = (lat, lon, radius = 0.0005) => {
+  const randomOffset = () => (Math.random() - 0.5) * radius * 2; // Генерация смещения в пределах radius
+  return [lat + randomOffset(), lon + randomOffset()];
+};
+
 function Game() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [history, setHistory] = useState([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [generatedPoint, setGeneratedPoint] = useState(null);
   const maxDistance = 100;
 
+  // Загрузка истории и текущего индекса
   useEffect(() => {
-    const savedHistory = localStorage.getItem('pointsHistory');
+    const savedHistory = localStorage.getItem("pointsHistory");
     if (savedHistory) {
       setHistory(JSON.parse(savedHistory));
     }
+
+    const savedIndex = localStorage.getItem("currentIndex");
+    if (savedIndex) {
+      setCurrentIndex(parseInt(savedIndex, 10));
+    }
+
+    const savedGeneratedPoint = localStorage.getItem("generatedPoint");
+    if (savedGeneratedPoint) {
+      setGeneratedPoint(JSON.parse(savedGeneratedPoint));
+    }
   }, []);
+
+  // Генерация первой точки, если её нет в `localStorage`
+  useEffect(() => {
+    if (!generatedPoint && currentIndex === 0) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const newPoint = {
+            id: 0,
+            text: "Случайная стартовая точка",
+            coordinates: getRandomNearbyPoint(
+              position.coords.latitude,
+              position.coords.longitude
+            ),
+          };
+          setGeneratedPoint(newPoint);
+          localStorage.setItem("generatedPoint", JSON.stringify(newPoint));
+        },
+        (error) => {
+          console.error("Ошибка получения геолокации:", error);
+        }
+      );
+    }
+  }, [generatedPoint, currentIndex]);
 
   const handleNextPoint = async () => {
     try {
@@ -47,7 +88,10 @@ function Game() {
         position.coords.longitude
       ];
 
-      const currentPoint = points[currentIndex];
+      const currentPoint = currentIndex === 0 ? generatedPoint : points[currentIndex-1];
+
+      if (!currentPoint) return;
+
       const distance = checkDistance(...userCoords, ...currentPoint.coordinates);
 
       if (distance <= maxDistance) {
@@ -58,7 +102,15 @@ function Game() {
         
         setHistory(newHistory);
         localStorage.setItem('pointsHistory', JSON.stringify(newHistory));
-        setCurrentIndex(prev => prev + 1);
+
+        if (currentIndex === 0) {
+          localStorage.removeItem("generatedPoint"); // Удаляем точку из `localStorage`, чтобы она не появлялась снова
+          setGeneratedPoint(null);
+        }
+
+        const newIndex = currentIndex + 1;
+        setCurrentIndex(newIndex);
+        localStorage.setItem("currentIndex", newIndex);
       }
       else {
         console.log('Ну да я же дома');
@@ -68,9 +120,11 @@ function Game() {
     }
   };
 
+  const currentPoint = currentIndex === 0 ? generatedPoint : points[currentIndex - 1];
+
     return (
     <div className="game-container">
-      <GameMap currentPoint={points[currentIndex]} />
+      {currentPoint && <GameMap currentPoint={currentPoint} />}
 
       <div className="controls-container">
         <button 

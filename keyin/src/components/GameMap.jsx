@@ -50,8 +50,8 @@ function GameMap({ currentPoint }) {
 
     return (
     <MapContainer
-      center={userPosition || currentPoint?.coordinates || [53.1959, 50.1002]}
-      zoom={14}
+      center={userPosition || [53.1959, 50.1002]}
+      zoom={13}
       className="map-container"
     >
       <TileLayer
