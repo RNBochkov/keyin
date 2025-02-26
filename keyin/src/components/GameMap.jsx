@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import { useMap } from 'react-leaflet/hooks'
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef  } from "react";
 // import L from 'leaflet';
 import marker from '../assets/marker.png'
 import heromarker from '../assets/heromarker.png'
@@ -26,21 +26,56 @@ const customHeroIcon = new Icon({
   iconSize: [64,64]
 });
 
-// Компонент для следования карты за пользователем
-function MoveMap({ position }) {
+// // Компонент для следования карты за пользователем
+// function MoveMap({ position }) {
+//   const map = useMap();
+//   useEffect(() => {
+//     if (position) {
+//       map.setView(position, map.getZoom());
+//     }
+//   }, [position, map]);
+//   return null;
+// }
+
+// Анимированный маркер с поддержкой прозрачности
+const AnimatedMarker = ({ position, icon, opacity, children }) => {
+  const markerRef = useRef(null);
+
+  useEffect(() => {
+    if (markerRef.current && opacity !== undefined) {
+      markerRef.current.setOpacity(opacity);
+    }
+  }, [opacity]);
+
+  return (
+    <Marker
+      position={position}
+      icon={icon}
+      ref={markerRef}
+    >
+      {children}
+    </Marker>
+  );
+};
+
+// Компонент для плавного перемещения карты и зума
+function SmoothZoom({ position }) {
   const map = useMap();
+
   useEffect(() => {
     if (position) {
-      map.setView(position, map.getZoom());
+      map.flyTo(position, 15, { duration: 2 }); // Плавный зум за 2 секунды
     }
   }, [position, map]);
+
   return null;
 }
 
 function GameMap({ currentPoint }) {
     const [userPosition, setUserPosition] = useState(null);
+    const [markerOpacity, setMarkerOpacity] = useState(0); // Начальная прозрачность 0
 
-     useEffect(() => {
+    useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
         setUserPosition([position.coords.latitude, position.coords.longitude]);
@@ -54,6 +89,31 @@ function GameMap({ currentPoint }) {
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
+  useEffect(() => {
+    if (currentPoint) {
+      let isMounted = true;
+      let opacity = 0;
+      setMarkerOpacity(opacity);
+
+      const interval = setInterval(() => {
+        if (!isMounted) return;
+        opacity += 0.05;
+        if (opacity >= 1) {
+          opacity = 1;
+          clearInterval(interval);
+        }
+        setMarkerOpacity(opacity);
+      }, 100);
+
+      return () => {
+        isMounted = false;
+        clearInterval(interval);
+      };
+    } else {
+      setMarkerOpacity(0);
+    }
+  }, [currentPoint]);
+
     return (
     <MapContainer
       center={userPosition || [53.1959, 50.1002]}
@@ -66,12 +126,17 @@ function GameMap({ currentPoint }) {
         url='https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.png'
       />
 
-      <MoveMap position={userPosition} />
+      {/* <MoveMap position={userPosition} /> */}
+      <SmoothZoom position={currentPoint?.coordinates} />
 
       {currentPoint && (
-        <Marker position={currentPoint.coordinates} icon={customPointIcon}>
+        <AnimatedMarker
+          position={currentPoint.coordinates}
+          icon={customPointIcon}
+          opacity={markerOpacity}
+        >
           <Popup>{currentPoint.text}</Popup>
-        </Marker>
+        </AnimatedMarker>
       )}
 
       {userPosition && (
