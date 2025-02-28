@@ -1,43 +1,22 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon } from 'leaflet';
-import { useMap } from 'react-leaflet/hooks'
-import { useState, useEffect, useRef  } from "react";
-// import L from 'leaflet';
-import marker from '../assets/marker.png'
-import heromarker from '../assets/heromarker.png'
+import { useMap } from 'react-leaflet/hooks';
+import { useState, useEffect, useRef } from "react";
+import marker from '../assets/marker.png';
+import heromarker from '../assets/heromarker.png';
 import 'leaflet/dist/leaflet.css';
-import './GameMap.css'
-
-// Фикс для иконок маркеров
-// delete L.Icon.Default.prototype._getIconUrl;
-// L.Icon.Default.mergeOptions({
-//   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-//   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-//   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-// });
+import './GameMap.css';
 
 const customPointIcon = new Icon({
   iconUrl: marker,
-  iconSize: [64,64]
+  iconSize: [64, 64]
 });
 
 const customHeroIcon = new Icon({
   iconUrl: heromarker,
-  iconSize: [64,64]
+  iconSize: [64, 64]
 });
 
-// // Компонент для следования карты за пользователем
-// function MoveMap({ position }) {
-//   const map = useMap();
-//   useEffect(() => {
-//     if (position) {
-//       map.setView(position, map.getZoom());
-//     }
-//   }, [position, map]);
-//   return null;
-// }
-
-// Анимированный маркер с поддержкой прозрачности
 const AnimatedMarker = ({ position, icon, opacity, children }) => {
   const markerRef = useRef(null);
 
@@ -58,27 +37,57 @@ const AnimatedMarker = ({ position, icon, opacity, children }) => {
   );
 };
 
-// Компонент для плавного перемещения карты и зума
 function SmoothZoom({ position }) {
   const map = useMap();
 
   useEffect(() => {
     if (position) {
-      map.flyTo(position, 15, { duration: 2 }); // Плавный зум за 2 секунды
+      map.flyTo(position, 15, { duration: 2 });
     }
   }, [position, map]);
 
   return null;
 }
 
-function GameMap({ currentPoint }) {
-    const [userPosition, setUserPosition] = useState(null);
-    const [markerOpacity, setMarkerOpacity] = useState(0); // Начальная прозрачность 0
+function ReturnToUser({ userPosition, trigger }) {
+  const map = useMap();
 
-    useEffect(() => {
+  useEffect(() => {
+    if (trigger && userPosition) {
+      map.flyTo(userPosition, 15, { duration: 2 });
+    }
+  }, [trigger, userPosition, map]);
+
+  return null;
+}
+
+function InitialPosition({ userPosition }) {
+  const map = useMap();
+  const isInitialized = useRef(false);
+
+  useEffect(() => {
+    if (userPosition && !isInitialized.current) {
+      map.flyTo(userPosition, 15, { duration: 1 });
+      isInitialized.current = true;
+    }
+  }, [userPosition, map]);
+
+  return null;
+}
+
+function GameMap({ currentPoint }) {
+  const [userPosition, setUserPosition] = useState(null);
+  const [markerOpacity, setMarkerOpacity] = useState(0);
+  const [returnTrigger, setReturnTrigger] = useState(false);
+
+  useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
-        setUserPosition([position.coords.latitude, position.coords.longitude]);
+        const newPos = [
+          position.coords.latitude,
+          position.coords.longitude
+        ];
+        setUserPosition(newPos);
       },
       (error) => {
         console.error("Ошибка геолокации:", error);
@@ -93,6 +102,7 @@ function GameMap({ currentPoint }) {
     if (currentPoint) {
       let isMounted = true;
       let opacity = 0;
+      let timeoutId = null;
       setMarkerOpacity(opacity);
 
       const interval = setInterval(() => {
@@ -101,6 +111,9 @@ function GameMap({ currentPoint }) {
         if (opacity >= 1) {
           opacity = 1;
           clearInterval(interval);
+          timeoutId = setTimeout(() => {
+            setReturnTrigger(prev => !prev);
+          }, 2000);
         }
         setMarkerOpacity(opacity);
       }, 100);
@@ -108,44 +121,45 @@ function GameMap({ currentPoint }) {
       return () => {
         isMounted = false;
         clearInterval(interval);
+        if (timeoutId) clearTimeout(timeoutId);
       };
     } else {
       setMarkerOpacity(0);
     }
   }, [currentPoint]);
 
-    return (
-    <MapContainer
-      center={userPosition || [53.1959, 50.1002]}
-      zoom={13}
-      className="map-container"
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        url='https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.png'
-      />
+  return (
+      <MapContainer
+        center={[53.1959, 50.1002]} // Дефолтные координаты
+        zoom={15}
+        className="map-container"
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url='https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.png'
+        />
+        
+        <InitialPosition userPosition={userPosition} />
+        <SmoothZoom position={currentPoint?.coordinates} />
+        <ReturnToUser userPosition={userPosition} trigger={returnTrigger} />
 
-      {/* <MoveMap position={userPosition} /> */}
-      <SmoothZoom position={currentPoint?.coordinates} />
+        {currentPoint && (
+          <AnimatedMarker
+            position={currentPoint.coordinates}
+            icon={customPointIcon}
+            opacity={markerOpacity}
+          >
+            <Popup>{currentPoint.text}</Popup>
+          </AnimatedMarker>
+        )}
 
-      {currentPoint && (
-        <AnimatedMarker
-          position={currentPoint.coordinates}
-          icon={customPointIcon}
-          opacity={markerOpacity}
-        >
-          <Popup>{currentPoint.text}</Popup>
-        </AnimatedMarker>
-      )}
-
-      {userPosition && (
-        <Marker position={userPosition} icon={customHeroIcon}>
-          <Popup>Вы здесь</Popup>
-        </Marker>
-      )}
-    </MapContainer>
-    );
+        {userPosition && (
+          <Marker position={userPosition} icon={customHeroIcon}>
+            <Popup>Вы здесь</Popup>
+          </Marker>
+        )}
+      </MapContainer>
+  );
 }
 
 export default GameMap;
