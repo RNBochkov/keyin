@@ -8,10 +8,10 @@ const characters = import.meta.glob("../assets/characters/*", { eager: true });
 
 const StoryModal = ({ currentPointId, onClose }) => {
   const [story, setStory] = useState(null);
-  const [currentText, setCurrentText] = useState(""); // Текущий текст для эффекта печатной машинки
-  const [textIndex, setTextIndex] = useState(0); // Индекс строки текста в массиве
-  const [charIndex, setCharIndex] = useState(0); // Индекс текущего символа
-  const [isTyping, setIsTyping] = useState(false); // Флаг, идет ли печатание
+  const [currentText, setCurrentText] = useState(""); 
+  const [textIndex, setTextIndex] = useState(0); 
+  const [charIndex, setCharIndex] = useState(0); 
+  const [isTyping, setIsTyping] = useState(false); 
 
   useEffect(() => {
     const currentStory = storyData.find((item) => item.id === currentPointId);
