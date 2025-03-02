@@ -1,13 +1,8 @@
 import GameMap from "../components/GameMap";
-import { useState, useEffect } from 'react';
-import "./Game.css"
+import { useState, useEffect } from "react";
+import "./Game.css";
 import pointsData from "../data/points.json";
-
-// const pointsData = [
-//   { id: 1, text: 'Дом родимый дом', coordinates: [53.2248388, 50.2708778]},
-//   { id: 2, text: 'Сюда нам надо', coordinates: [53.1860722, 50.0927639] },
-//   { id: 3, text: 'Точка 2', coordinates: [53.210, 50.120] },
-// ];
+import StoryModal from "../components/StoryModal";
 
 const checkDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371e3;
@@ -24,9 +19,9 @@ const checkDistance = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
-// Генерация случайной точки рядом с текущим местоположением
+// Функция генерации случайной точки
 const getRandomNearbyPoint = (lat, lon, radius = 0.0005) => {
-  const randomOffset = () => (Math.random() - 0.5) * radius * 2; // Генерация смещения в пределах radius
+  const randomOffset = () => (Math.random() - 0.5) * radius * 2;
   return [lat + randomOffset(), lon + randomOffset()];
 };
 
@@ -37,9 +32,9 @@ function Game() {
   const [generatedPoint, setGeneratedPoint] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isNearPoint, setIsNearPoint] = useState(false);
+  const [isStoryOpen, setIsStoryOpen] = useState(true); 
   const maxDistance = 100;
 
-  // Загрузка истории и текущего индекса
   useEffect(() => {
     const savedHistory = localStorage.getItem("pointsHistory");
     if (savedHistory) {
@@ -56,10 +51,9 @@ function Game() {
       setGeneratedPoint(JSON.parse(savedGeneratedPoint));
     }
 
-    setIsLoaded(true); // Даем сигнал, что данные загружены
+    setIsLoaded(true);
   }, []);
 
-  // Генерация первой точки, если её нет в `localStorage`
   useEffect(() => {
     if (isLoaded && !generatedPoint && currentIndex === 0) {
       navigator.geolocation.getCurrentPosition(
@@ -105,15 +99,15 @@ function Game() {
       }
     };
 
-    const interval = setInterval(checkUserProximity, 2000); // Проверять каждые 5 секунд
+    const interval = setInterval(checkUserProximity, 2000);
 
     return () => clearInterval(interval);
   }, [isLoaded, generatedPoint, currentIndex]);
 
   const handleNextPoint = () => {
     if (!isNearPoint) return;
-
     setIsNearPoint(false);
+    setIsStoryOpen(true); // Открываем модалку с историей
 
     const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
 
@@ -139,8 +133,15 @@ function Game() {
 
   const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
 
-    return (
+  return (
     <div className="game-container">
+      {isStoryOpen && (
+        <StoryModal
+          currentPointId={currentIndex}
+          onClose={() => setIsStoryOpen(false)}
+        />
+      )}
+
       {currentPoint && <GameMap currentPoint={currentPoint} />}
 
       <div className="controls-container">
@@ -180,6 +181,7 @@ function Game() {
 
       {isHistoryOpen && <div className="modal-overlay" />}
     </div>
-    );
+  );
 }
+
 export default Game;

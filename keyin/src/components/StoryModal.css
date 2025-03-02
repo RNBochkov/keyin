@@ -1,0 +1,145 @@
+/* Основные стили */
+.story-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 9999;
+  filter: sepia(0.3) contrast(1.1) brightness(0.9);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Затемнение фона */
+.story-modal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: -1;
+}
+
+/* Персонаж (верхняя 50% экрана) */
+.character-container {
+  width: 100%;
+  height: 50%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.character {
+  width: 50%;
+  max-height: 90%;
+  object-fit: contain;
+  transition: transform 0.5s ease-in-out;
+}
+
+.character:hover {
+  transform: scale(1.1);
+}
+
+/* Диалоговое окно (нижняя 50% экрана) */
+.dialog-box {
+  width: 100%;
+  height: 50%;
+  background: rgba(42, 39, 39, 0.9);
+  border-radius: 15px 15px 0 0;
+  text-align: center;
+  font-size: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.3);
+  border: 2px solid #57534e;
+  animation: fadeInText 1s ease-in-out;
+}
+
+/* Имя персонажа */
+.character-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+  font-family: 'Cinzel Decorative', serif;
+  color: #d4c4a9;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 2px solid #8a7c6e;
+}
+
+/* Кнопка продолжить */
+.close-button {
+  align-self: flex-end;
+  padding: 10px 20px;
+  background: linear-gradient(to bottom, #6b645b 0%, #403d38 100%);
+  color: #d4c4a9;
+  border: 2px solid #8a7c6e;
+  border-radius: 5px;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.close-button:hover {
+  background: linear-gradient(to bottom, #80756b 0%, #504a42 100%);
+  border-color: #a89885;
+  box-shadow: 0 0 12px rgba(168, 152, 133, 0.4);
+}
+
+.typing-text::after {
+  content: "|";
+  display: inline-block;
+  margin-left: 5px;
+  opacity: 1;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+
+/* Появление текста */
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+  .character {
+    width: 70%;
+  }
+
+  .dialog-box {
+    font-size: 1rem;
+    padding: 15px;
+  }
+
+  .character-name {
+    font-size: 1.2rem;
+  }
+
+  .close-button {
+    font-size: 0.9rem;
+    padding: 8px 15px;
+  }
+}

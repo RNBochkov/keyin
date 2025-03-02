@@ -21,11 +21,33 @@ function Landing() {
     }
   };
 
+  const handleInvestigationStart = () => {
+    const modal = document.querySelector('.instruction-modal');
+    const spotlight = document.querySelector('.spotlight-overlay');
+    
+    if (modal) {
+      modal.classList.add('fade-out'); // Модальное окно плавно исчезает
+    }
+
+    setTimeout(() => {
+      if (spotlight) {
+        spotlight.classList.add('off'); // Прожектор выключается
+      }
+    }, 1000); // После 2 секунд выключается прожектор
+    
+    setTimeout(() => {
+      navigate("/samaragoroad"); // Переход на страницу после 5 секунд
+    }, 5000); // Даем время для анимации
+};
+
+
+
+  
   return (
     <div className="landing-container">
       
       {/* Эффект прожектора */}
-{step == 2 && (
+      {step === 2 && (
         <div className="spotlight-overlay">
           <div className="spotlight-beam"></div>
         </div>
@@ -41,9 +63,9 @@ function Landing() {
           в атмосферу интерактивного расследования.
         </p>
         <p className="subtitle">
-    Следуй за уликами и открывай неизведанное — 
-    каждая улица может хранить свою тайну.
-  </p>
+          Следуй за уликами и открывай неизведанное — 
+          каждая улица может хранить свою тайну.
+        </p>
         <button className="start-button" onClick={handleStartClick}>
           Начать расследование
         </button>
@@ -69,7 +91,7 @@ function Landing() {
             Не забывайте наслаждаться красотой Самары — заглядывайте в 
             неизведанные уголки, делайте фото на память.
           </p>
-          <button className="agree-button" onClick={() => navigate("/samaragoroad")}>
+          <button className="agree-button" onClick={handleInvestigationStart}>
             Погрузиться в расследование
           </button>
         </div>

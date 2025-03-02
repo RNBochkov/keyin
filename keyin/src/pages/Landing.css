@@ -92,61 +92,93 @@ body {
     flex-direction: column;
 }
 
+
 .spotlight-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 200%;  
-    height: 200%; 
-    background: rgba(0, 0, 0, 0);
-    pointer-events: none;
-    z-index: 9998; 
-    transform: translate(-50%, -50%); 
-    left: 50%;
-    top: 50%;
-    mask-image: radial-gradient(circle, transparent 5%, black 50%); 
-    animation: moveSpotlight 10s infinite linear alternate, fadeInDark 5s forwards; 
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 200%;
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
+  mask-image: radial-gradient(circle, transparent 5%, black 50%);
+  animation: moveSpotlight 10s infinite linear alternate, fadeInDark 5s forwards;
+}
+
+@keyframes lastmask {
+    0% {
+        mask-image: radial-gradient(circle, transparent 5%, black 50%);
+    }
+    10% {
+        mask-image: radial-gradient(circle, transparent 4%, black 45%);
+    }
+    20% {
+        mask-image: radial-gradient(circle, transparent 3%, black 40%);
+    }
+    30% {
+        mask-image: radial-gradient(circle, transparent 3%, black 35%);
+    }
+    40% {
+        mask-image: radial-gradient(circle, transparent 2%, black 30%);
+    }
+    50% {
+        mask-image: radial-gradient(circle, transparent 1%, black 25%);
+    }
+    70% {
+        mask-image: radial-gradient(circle, transparent 0%, black 0%);
+    }
+    100% {
+        mask-image: radial-gradient(circle, transparent 0%, black 0%);
+    }
+}
+
+.spotlight-overlay.off {
+    background: rgba(0, 0, 0, 1);  /* Полный черный фон */
+    mask-image: radial-gradient(circle, transparent 5%, black 50%); /* Начинаем с небольшого затемнения */
+    animation: moveSpotlight 10s infinite linear alternate, lastmask 5s forwards; /* Мерцание и затемнение */
 }
 
 
 @keyframes moveSpotlight {
-    0% {
-        top: 10%;
-        left: 10%;
-    }
-    25% {
-        top: 10%;
-        left: 90%;
-    }
-    50% {
-        top: 90%;
-        left: 90%;
-    }
-    75% {
-        top: 90%;
-        left: 10%;
-    }
-    100% {
-        top: 10%;
-        left: 10%;
-    }
+  0% {
+    top: 10%;
+    left: 10%;
+  }
+  25% {
+    top: 10%;
+    left: 90%;
+  }
+  50% {
+    top: 90%;
+    left: 90%;
+  }
+  75% {
+    top: 90%;
+    left: 10%;
+  }
+  100% {
+    top: 10%;
+    left: 10%;
+  }
 }
 
-
 @keyframes fadeInDark {
-    0% {
-        background: rgba(0, 0, 0, 0); /* Прозрачный фон */
-    }
-    100% {
-        background: rgba(0, 0, 0, 1); /* Прозрачность 90% */
-    }
+  0% {
+    background: rgba(0, 0, 0, 0);
+  }
+  100% {
+    background: rgba(0, 0, 0, 1);
+  }
 }
 
 .blurred {
     filter: blur(6px) brightness(0.4);
     transition: all 1.5s ease;
 }
-
 .overlay.blurred {
     animation: fadeOut 1.5s ease-in-out forwards; 
 }
@@ -159,6 +191,11 @@ body {
         pointer-events: none; 
     }
 }
+.fade-out {
+  animation: fadeOut 1s forwards;
+}
+
+
 
 .start-button, .agree-button {
     background: linear-gradient(to bottom, #6b645b 0%, #403d38 100%);
@@ -193,6 +230,20 @@ body {
     max-width: min(80%, 450px);
     z-index: 9999; 
     border: 3px solid #8a7c6e;
+}
+
+@keyframes fadeOutModal {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+.instruction-modal.fade-out {
+    animation: fadeOutModal 1s ease forwards;
 }
 
 
