@@ -141,7 +141,7 @@ function GameMap({ currentPoint }) {
         
         <InitialPosition userPosition={userPosition} />
         <SmoothZoom position={currentPoint?.coordinates} />
-        <ReturnToUser userPosition={userPosition} trigger={returnTrigger} />
+        {/* <ReturnToUser userPosition={userPosition} trigger={returnTrigger} /> */}
 
         {currentPoint && (
           <AnimatedMarker
