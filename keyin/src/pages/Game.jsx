@@ -135,7 +135,7 @@ function Game() {
 
   return (
     <div className="game-container">
-      {isStoryOpen && (
+      {isStoryOpen && currentPoint && (
         <StoryModal
           currentPointId={currentIndex}
           onClose={() => setIsStoryOpen(false)}
