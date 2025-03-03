@@ -1,74 +1,43 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
-import { useMap } from 'react-leaflet/hooks';
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import marker from '../assets/marker.png';
 import heromarker from '../assets/heromarker.png';
 import 'leaflet/dist/leaflet.css';
 import './GameMap.css';
 
-const customPointIcon = new Icon({
-  iconUrl: marker,
-  iconSize: [64, 64]
-});
+const customPointIcon = new Icon({ iconUrl: marker, iconSize: [64, 64] });
+const customHeroIcon = new Icon({ iconUrl: heromarker, iconSize: [64, 64] });
 
-const customHeroIcon = new Icon({
-  iconUrl: heromarker,
-  iconSize: [64, 64]
-});
-
-const AnimatedMarker = ({ position, icon, opacity, children }) => {
-  const markerRef = useRef(null);
-
-  useEffect(() => {
-    if (markerRef.current && opacity !== undefined) {
-      markerRef.current.setOpacity(opacity);
-    }
-  }, [opacity]);
-
-  return (
-    <Marker
-      position={position}
-      icon={icon}
-      ref={markerRef}
-    >
-      {children}
-    </Marker>
-  );
-};
-
+/** Компонент для плавного зума */
 function SmoothZoom({ position, trigger, resetZoom }) {
   const map = useMap();
 
   useEffect(() => {
     if (trigger && position) {
       map.flyTo(position, 15, { duration: 2 });
-
-      setTimeout(() => {
-        resetZoom(); // Сбрасываем trigger после анимации зума
-      }, 2000);
+      setTimeout(resetZoom, 2000);
     }
   }, [trigger, position, map, resetZoom]);
-  
+
   return null;
 }
 
+/** Компонент возврата к пользователю */
 function ReturnToUser({ userPosition, trigger, resetReturnTrigger }) {
   const map = useMap();
 
   useEffect(() => {
     if (trigger && userPosition) {
       map.flyTo(userPosition, 15, { duration: 2 });
-
-      setTimeout(() => {
-        resetReturnTrigger(); // Сбрасываем триггер после завершения анимации
-      }, 2000);
+      setTimeout(resetReturnTrigger, 2000);
     }
   }, [trigger, userPosition, map, resetReturnTrigger]);
 
   return null;
 }
 
+/** Компонент для установки стартовой позиции */
 function InitialPosition({ userPosition }) {
   const map = useMap();
   const isInitialized = useRef(false);
@@ -87,82 +56,63 @@ function GameMap({ currentPoint, animateMarker, resetAnimation, zoomTrigger, res
   const [userPosition, setUserPosition] = useState(null);
   const [markerOpacity, setMarkerOpacity] = useState(0);
   const [returnTrigger, setReturnTrigger] = useState(false);
+  const intervalRef = useRef(null); // Ref для контроля интервала
 
+  /** Получаем координаты пользователя */
   useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
-        const newPos = [
-          position.coords.latitude,
-          position.coords.longitude
-        ];
-        setUserPosition(newPos);
+        setUserPosition([position.coords.latitude, position.coords.longitude]);
       },
-      (error) => {
-        console.error("Ошибка геолокации:", error);
-      },
+      (error) => console.error("Ошибка геолокации:", error),
       { enableHighAccuracy: true, maximumAge: 0 }
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
+  /** Анимация появления маркера */
   useEffect(() => {
-    if (animateMarker && currentPoint) {
-      let isMounted = true;
-      let opacity = 0;
-      let timeoutId = null;
+    if (!animateMarker || !currentPoint) return;
+
+    let timeoutId = null;
+    let opacity = 0;
+    setMarkerOpacity(0);
+
+    intervalRef.current = setInterval(() => {
+      opacity = Math.min(opacity + 0.05, 1);
       setMarkerOpacity(opacity);
-
-      const interval = setInterval(() => {
-        if (!isMounted) return;
-        opacity += 0.05;
-        if (opacity >= 1) {
-          opacity = 1;
-          clearInterval(interval);
-          setMarkerOpacity(1);
-          timeoutId = setTimeout(() => {
-            setReturnTrigger(prev => !prev);
-          }, 1000);
+      if (opacity === 1) {
+        clearInterval(intervalRef.current);
+        timeoutId = setTimeout(setReturnTrigger(prev => !prev), 1000)
         }
-        setMarkerOpacity(opacity);
-        
-      }, 100);
+    }, 100);
 
-      return () => {
-        isMounted = false;
-        clearInterval(interval);
-        if (timeoutId) clearTimeout(timeoutId);
-        resetAnimation(); // Сбрасываем animateMarker в false
-      };
-    } else {
-      setMarkerOpacity(0);
-      
-    }
+    return () => {
+      clearInterval(intervalRef.current);
+      if (timeoutId) clearTimeout(timeoutId);
+      resetAnimation();
+    };
   }, [animateMarker, currentPoint, resetAnimation]);
 
+  /** Обработчик возврата к пользователю */
+  const handleReturnToUser = useCallback(() => setReturnTrigger(true), []);
+
   return (
-      <MapContainer
-        center={[53.1959, 50.1002]} // Дефолтные координаты
-        zoom={15}
-        className="map-container"
-      >
+      <MapContainer center={[53.1959, 50.1002]} zoom={15} className="map-container">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url='https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.png'
         />
-        
+
         <InitialPosition userPosition={userPosition} />
-        <SmoothZoom position={currentPoint?.coordinates} trigger={zoomTrigger} resetZoom={resetZoom}/>
+        <SmoothZoom position={currentPoint?.coordinates} trigger={zoomTrigger} resetZoom={resetZoom} />
         <ReturnToUser userPosition={userPosition} trigger={returnTrigger} resetReturnTrigger={() => setReturnTrigger(false)} />
 
         {currentPoint && (
-          <AnimatedMarker
-            position={currentPoint.coordinates}
-            icon={customPointIcon}
-            opacity={markerOpacity}
-          >
+          <Marker position={currentPoint.coordinates} icon={customPointIcon} opacity={markerOpacity}>
             <Popup>{currentPoint.text}</Popup>
-          </AnimatedMarker>
+          </Marker>
         )}
 
         {userPosition && (
@@ -170,13 +120,11 @@ function GameMap({ currentPoint, animateMarker, resetAnimation, zoomTrigger, res
             <Popup>Вы здесь</Popup>
           </Marker>
         )}
-
         <div className="map-button-container">
-  <button className="return-button" onClick={() => setReturnTrigger(true)}>
-    📍
-  </button>
-</div>
-
+          <button className="return-button" onClick={handleReturnToUser}>
+            📍
+          </button>
+      </div>
       </MapContainer>
   );
 }
