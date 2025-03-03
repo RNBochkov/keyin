@@ -57,6 +57,7 @@ function GameMap({ currentPoint, animateMarker, resetAnimation, zoomTrigger, res
   const [markerOpacity, setMarkerOpacity] = useState(0);
   const [returnTrigger, setReturnTrigger] = useState(false);
   const intervalRef = useRef(null); // Ref для контроля интервала
+  const markerOpacityRef = useRef(0); // Храним предыдущее значение
 
   /** Получаем координаты пользователя */
   useEffect(() => {
@@ -81,9 +82,20 @@ function GameMap({ currentPoint, animateMarker, resetAnimation, zoomTrigger, res
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
+  // Сбрасываем прозрачность при изменении текущей точки
+  useEffect(() => {
+    setMarkerOpacity(0);
+    markerOpacityRef.current = 0;
+  }, [currentPoint]);
+
   /** Анимация появления маркера */
   useEffect(() => {
-    if (!animateMarker || !currentPoint) return;
+    if (!animateMarker || !currentPoint) {
+       // Гарантируем прозрачность, если анимация не активна
+      setMarkerOpacity(0);
+      markerOpacityRef.current = 0;
+      return;
+    }
 
     let timeoutId = null;
     let opacity = 0;
@@ -92,9 +104,10 @@ function GameMap({ currentPoint, animateMarker, resetAnimation, zoomTrigger, res
     intervalRef.current = setInterval(() => {
       opacity = Math.min(opacity + 0.05, 1);
       setMarkerOpacity(opacity);
+      markerOpacityRef.current = opacity; // Сохраняем значение
       if (opacity === 1) {
         clearInterval(intervalRef.current);
-        timeoutId = setTimeout(setReturnTrigger(prev => !prev), 1000)
+        timeoutId = setTimeout(() => setReturnTrigger(prev => !prev), 1000)
         }
     }, 100);
 

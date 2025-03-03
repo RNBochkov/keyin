@@ -121,6 +121,10 @@ function Game() {
     const newIndex = currentIndex + 1;
     setCurrentIndex(newIndex);
     localStorage.setItem("currentIndex", newIndex);
+
+    setTimeout(() => {
+    setAnimateMarker(false); // Помечаем точку пройденной, скрываем маркер
+  }, 1000);
   };
 
   const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
