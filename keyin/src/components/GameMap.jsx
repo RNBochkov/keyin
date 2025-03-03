@@ -53,14 +53,18 @@ function SmoothZoom({ position, trigger, resetZoom }) {
   return null;
 }
 
-function ReturnToUser({ userPosition, trigger }) {
+function ReturnToUser({ userPosition, trigger, resetReturnTrigger }) {
   const map = useMap();
 
   useEffect(() => {
     if (trigger && userPosition) {
       map.flyTo(userPosition, 15, { duration: 2 });
+
+      setTimeout(() => {
+        resetReturnTrigger(); // Сбрасываем триггер после завершения анимации
+      }, 2000);
     }
-  }, [trigger, userPosition, map]);
+  }, [trigger, userPosition, map, resetReturnTrigger]);
 
   return null;
 }
@@ -118,7 +122,7 @@ function GameMap({ currentPoint, animateMarker, resetAnimation, zoomTrigger, res
           setMarkerOpacity(1);
           timeoutId = setTimeout(() => {
             setReturnTrigger(prev => !prev);
-          }, 2000);
+          }, 1000);
         }
         setMarkerOpacity(opacity);
         
@@ -149,7 +153,7 @@ function GameMap({ currentPoint, animateMarker, resetAnimation, zoomTrigger, res
         
         <InitialPosition userPosition={userPosition} />
         <SmoothZoom position={currentPoint?.coordinates} trigger={zoomTrigger} resetZoom={resetZoom}/>
-        {/* <ReturnToUser userPosition={userPosition} trigger={returnTrigger} /> */}
+        <ReturnToUser userPosition={userPosition} trigger={returnTrigger} resetReturnTrigger={() => setReturnTrigger(false)} />
 
         {currentPoint && (
           <AnimatedMarker
@@ -166,6 +170,13 @@ function GameMap({ currentPoint, animateMarker, resetAnimation, zoomTrigger, res
             <Popup>Вы здесь</Popup>
           </Marker>
         )}
+
+        <div className="map-button-container">
+  <button className="return-button" onClick={() => setReturnTrigger(true)}>
+    📍
+  </button>
+</div>
+
       </MapContainer>
   );
 }
