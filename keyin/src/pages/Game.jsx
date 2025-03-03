@@ -33,6 +33,8 @@ function Game() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isNearPoint, setIsNearPoint] = useState(false);
   const [isStoryOpen, setIsStoryOpen] = useState(true); 
+  const [animateMarker, setAnimateMarker] = useState(false);
+  const [zoomTrigger, setZoomTrigger] = useState(false);
   const maxDistance = 100;
 
   useEffect(() => {
@@ -138,11 +140,24 @@ function Game() {
       {isStoryOpen && currentPoint && (
         <StoryModal
           currentPointId={currentIndex}
-          onClose={() => setIsStoryOpen(false)}
+          onClose={() => {
+            setIsStoryOpen(false);
+            setZoomTrigger(true); // Запускаем зум, но НЕ появление маркера
+          }}
         />
       )}
 
-      {currentPoint && <GameMap currentPoint={currentPoint} />}
+      {currentPoint && 
+      <GameMap 
+      currentPoint={currentPoint} 
+      animateMarker={animateMarker} 
+      resetAnimation={() => setAnimateMarker(false)}
+      zoomTrigger={zoomTrigger}
+      resetZoom={() => {
+        setZoomTrigger(false);
+        setAnimateMarker(true); // После завершения зума запускаем анимацию маркера
+      }}
+      />}
 
       <div className="controls-container">
         {isNearPoint ? (

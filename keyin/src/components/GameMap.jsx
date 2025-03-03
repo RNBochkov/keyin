@@ -37,15 +37,19 @@ const AnimatedMarker = ({ position, icon, opacity, children }) => {
   );
 };
 
-function SmoothZoom({ position }) {
+function SmoothZoom({ position, trigger, resetZoom }) {
   const map = useMap();
 
   useEffect(() => {
-    if (position) {
+    if (trigger && position) {
       map.flyTo(position, 15, { duration: 2 });
-    }
-  }, [position, map]);
 
+      setTimeout(() => {
+        resetZoom(); // Сбрасываем trigger после анимации зума
+      }, 2000);
+    }
+  }, [trigger, position, map, resetZoom]);
+  
   return null;
 }
 
@@ -75,7 +79,7 @@ function InitialPosition({ userPosition }) {
   return null;
 }
 
-function GameMap({ currentPoint }) {
+function GameMap({ currentPoint, animateMarker, resetAnimation, zoomTrigger, resetZoom }) {
   const [userPosition, setUserPosition] = useState(null);
   const [markerOpacity, setMarkerOpacity] = useState(0);
   const [returnTrigger, setReturnTrigger] = useState(false);
@@ -99,7 +103,7 @@ function GameMap({ currentPoint }) {
   }, []);
 
   useEffect(() => {
-    if (currentPoint) {
+    if (animateMarker && currentPoint) {
       let isMounted = true;
       let opacity = 0;
       let timeoutId = null;
@@ -111,22 +115,26 @@ function GameMap({ currentPoint }) {
         if (opacity >= 1) {
           opacity = 1;
           clearInterval(interval);
+          setMarkerOpacity(1);
           timeoutId = setTimeout(() => {
             setReturnTrigger(prev => !prev);
           }, 2000);
         }
         setMarkerOpacity(opacity);
+        
       }, 100);
 
       return () => {
         isMounted = false;
         clearInterval(interval);
         if (timeoutId) clearTimeout(timeoutId);
+        resetAnimation(); // Сбрасываем animateMarker в false
       };
     } else {
       setMarkerOpacity(0);
+      
     }
-  }, [currentPoint]);
+  }, [animateMarker, currentPoint, resetAnimation]);
 
   return (
       <MapContainer
@@ -140,7 +148,7 @@ function GameMap({ currentPoint }) {
         />
         
         <InitialPosition userPosition={userPosition} />
-        <SmoothZoom position={currentPoint?.coordinates} />
+        <SmoothZoom position={currentPoint?.coordinates} trigger={zoomTrigger} resetZoom={resetZoom}/>
         {/* <ReturnToUser userPosition={userPosition} trigger={returnTrigger} /> */}
 
         {currentPoint && (
