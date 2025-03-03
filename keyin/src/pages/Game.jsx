@@ -58,53 +58,43 @@ function Game() {
 
   useEffect(() => {
     if (isLoaded && !generatedPoint && currentIndex === 0) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const newPoint = {
-            id: 0,
-            text: "Случайная стартовая точка",
-            coordinates: getRandomNearbyPoint(
-              position.coords.latitude,
-              position.coords.longitude
-            ),
-          };
-          setGeneratedPoint(newPoint);
-          localStorage.setItem("generatedPoint", JSON.stringify(newPoint));
-        },
-        (error) => {
-          console.error("Ошибка получения геолокации:", error);
-        }
-      );
+      const savedLocation = localStorage.getItem("userLocation");
+
+      if (savedLocation) {
+        const { lat, lon } = JSON.parse(savedLocation);
+        const newPoint = {
+          id: 0,
+          text: "Случайная стартовая точка",
+          coordinates: getRandomNearbyPoint(lat, lon),
+        };
+        setGeneratedPoint(newPoint);
+        localStorage.setItem("generatedPoint", JSON.stringify(newPoint));
+      }
     }
   }, [isLoaded, generatedPoint, currentIndex]);
 
+
   useEffect(() => {
-    const checkUserProximity = async () => {
-      try {
-        const position = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject);
-        });
+  const checkUserProximity = () => {
+    const savedLocation = localStorage.getItem("userLocation");
+    if (!savedLocation) return;
 
-        const userCoords = [
-          position.coords.latitude,
-          position.coords.longitude,
-        ];
+    const { lat, lon } = JSON.parse(savedLocation);
+    const userCoords = [lat, lon];
 
-        const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
+    const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
 
-        if (currentPoint) {
-          const distance = checkDistance(...userCoords, ...currentPoint.coordinates);
-          setIsNearPoint(distance <= maxDistance);
-        }
-      } catch (error) {
-        console.error("Ошибка получения геолокации:", error);
-      }
-    };
+    if (currentPoint) {
+      const distance = checkDistance(...userCoords, ...currentPoint.coordinates);
+      setIsNearPoint(distance <= maxDistance);
+    }
+  };
 
-    const interval = setInterval(checkUserProximity, 2000);
+  checkUserProximity(); // Проверяем сразу при загрузке
+  const interval = setInterval(checkUserProximity, 2000);
 
-    return () => clearInterval(interval);
-  }, [isLoaded, generatedPoint, currentIndex]);
+  return () => clearInterval(interval);
+}, [isLoaded, generatedPoint, currentIndex]);
 
   const handleNextPoint = () => {
     if (!isNearPoint) return;

@@ -60,11 +60,21 @@ function GameMap({ currentPoint, animateMarker, resetAnimation, zoomTrigger, res
 
   /** Получаем координаты пользователя */
   useEffect(() => {
+    const savedLocation = localStorage.getItem("userLocation");
+
+    if (savedLocation) {
+      setUserPosition(JSON.parse(savedLocation)); // Загружаем сохраненные координаты
+    }
+
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
-        setUserPosition([position.coords.latitude, position.coords.longitude]);
+        const newPos = [position.coords.latitude, position.coords.longitude];
+        setUserPosition(newPos);
+        localStorage.setItem("userLocation", JSON.stringify({ lat: newPos[0], lon: newPos[1] }));
       },
-      (error) => console.error("Ошибка геолокации:", error),
+      (error) => {
+        console.error("Ошибка геолокации:", error);
+      },
       { enableHighAccuracy: true, maximumAge: 0 }
     );
 

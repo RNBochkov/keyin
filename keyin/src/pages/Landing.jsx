@@ -10,16 +10,23 @@ function Landing() {
     setStep(1);
   };
 
-  const handleAgreeInstruction = async () => {
-    try {
-      await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
-      });
-      setStep(2);
-    } catch (error) {
-      alert("Необходимо разрешить доступ к геолокации для продолжения.");
-    }
-  };
+const handleAgreeInstruction = async () => {
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+
+    const userCoords = {
+      lat: position.coords.latitude,
+      lon: position.coords.longitude,
+    };
+
+    localStorage.setItem("userLocation", JSON.stringify(userCoords)); // Сохраняем координаты
+    setStep(2);
+  } catch (error) {
+    alert("Необходимо разрешить доступ к геолокации для продолжения.");
+  }
+};
 
   const handleInvestigationStart = () => {
     const modal = document.querySelector('.instruction-modal');
