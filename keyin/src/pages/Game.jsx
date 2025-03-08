@@ -4,6 +4,7 @@ import "./Game.css";
 import pointsData from "../data/points.json";
 import StoryModal from "../components/StoryModal";
 
+// Функция проверки расстояния до точки
 const checkDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371e3;
   const φ1 = lat1 * Math.PI/180;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import './Landing.css';
 
@@ -22,6 +22,7 @@ const handleAgreeInstruction = async () => {
     };
 
     localStorage.setItem("userLocation", JSON.stringify(userCoords)); // Сохраняем координаты
+
     setStep(2);
   } catch (error) {
     alert("Необходимо разрешить доступ к геолокации для продолжения.");
@@ -62,7 +63,7 @@ const handleAgreeInstruction = async () => {
 
       <div className="game-title">SamaraGOroad</div>
 
-      <div className={`overlay ${step >= 1 ? 'blurred' : ''}`}>
+      <div className={`overlay ${step == 2 ? 'blurred' : ''}`}>
         <h1 className="title">Тайны Самары</h1>
         <p className="subtitle">
           Это приложение создано, чтобы разнообразить ваши прогулки по городу. 
