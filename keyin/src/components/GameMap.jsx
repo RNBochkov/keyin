@@ -9,45 +9,60 @@ import "./GameMap.css";
 const customPointIcon = new Icon({ iconUrl: marker, iconSize: [64, 64] });
 const customHeroIcon = new Icon({ iconUrl: heromarker, iconSize: [64, 64] });
 
-/** Компонент для плавного зума */
-function SmoothZoom({ position, trigger, resetZoom }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (trigger && position) {
-      map.flyTo(position, 15, { duration: 2 });
-      setTimeout(resetZoom, 2000);
-    }
-  }, [trigger, position, map, resetZoom]);
-
-  return null;
-}
-
-/** Компонент возврата к пользователю */
-function ReturnToUser({ userPosition, trigger, resetReturnTrigger }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (trigger && userPosition) {
-      map.flyTo(userPosition, 15, { duration: 2 });
-      setTimeout(resetReturnTrigger, 2000);
-    }
-  }, [trigger, userPosition, map, resetReturnTrigger]);
-
-  return null;
-}
-
-/** Компонент для установки стартовой позиции */
-function InitialPosition({ userPosition }) {
+/**
+ * Универсальный компонент для управления анимациями карты
+ * @param {Object} params - Параметры анимации
+ * @param {string} params.type - Тип анимации: 'zoom' | 'return' | 'initial'
+ * @param {Array} params.position - Координаты [lat, lng]
+ * @param {boolean} params.trigger - Флаг активации анимации
+ * @param {Function} params.onComplete - Колбэк по завершении анимации
+ * @param {number} params.zoomLevel - Уровень приближения
+ * @param {number} params.duration - Длительность анимации (сек)
+ */
+function MapAnimation({
+  type = "zoom",
+  position,
+  trigger,
+  onComplete,
+  zoomLevel = 16,
+  duration = 1,
+}) {
   const map = useMap();
   const isInitialized = useRef(false);
 
   useEffect(() => {
-    if (userPosition && !isInitialized.current) {
-      map.flyTo(userPosition, 15, { duration: 1 });
-      isInitialized.current = true;
+    if (!position || !map) return;
+
+    // Обработка начальной позиции (однократное выполнение)
+    if (type === "initial") {
+      if (!isInitialized.current) {
+        map.flyTo(position, zoomLevel, { duration });
+        isInitialized.current = true;
+      }
+      return;
     }
-  }, [userPosition, map]);
+
+    // Обработка триггерных анимаций
+    if (trigger) {
+      const animationParams = {
+        zoom: { center: position, zoom: zoomLevel },
+        return: { center: position, zoom: zoomLevel },
+      }[type];
+
+      if (animationParams) {
+        map.flyTo(animationParams.center, animationParams.zoom, {
+          duration: duration,
+        });
+
+        // Вызов колбэка после анимации
+        if (onComplete) {
+          const timeout = duration * 1000;
+          const timerId = setTimeout(() => onComplete(), timeout);
+          return () => clearTimeout(timerId);
+        }
+      }
+    }
+  }, [trigger, position, map, type, onComplete, zoomLevel, duration]);
 
   return null;
 }
@@ -62,16 +77,13 @@ function GameMap({
   const [userPosition, setUserPosition] = useState(null);
   const [markerOpacity, setMarkerOpacity] = useState(0);
   const [returnTrigger, setReturnTrigger] = useState(false);
-  const intervalRef = useRef(null); // Ref для контроля интервала
-  const markerOpacityRef = useRef(0); // Храним предыдущее значение
+  const intervalRef = useRef(null);
+  const markerOpacityRef = useRef(0);
 
-  /** Получаем координаты пользователя ?? второй раз за работу сайта(1 раз в лендинге)*/
+  // Получение и отслеживание позиции пользователя
   useEffect(() => {
     const savedLocation = localStorage.getItem("userLocation");
-
-    if (savedLocation) {
-      setUserPosition(JSON.parse(savedLocation)); // Загружаем сохраненные координаты
-    }
+    if (savedLocation) setUserPosition(JSON.parse(savedLocation));
 
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
@@ -82,25 +94,22 @@ function GameMap({
           JSON.stringify({ lat: newPos[0], lon: newPos[1] })
         );
       },
-      (error) => {
-        console.error("Ошибка геолокации:", error);
-      },
+      (error) => console.error("Ошибка геолокации:", error),
       { enableHighAccuracy: true, maximumAge: 0 }
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
-  // Сбрасываем прозрачность при изменении текущей точки
+  // Сброс прозрачности при смене точки
   useEffect(() => {
     setMarkerOpacity(0);
     markerOpacityRef.current = 0;
   }, [currentPoint]);
 
-  /** Анимация появления маркера */
+  // Анимация появления маркера
   useEffect(() => {
     if (!animateMarker || !currentPoint) {
-      // Гарантируем прозрачность, если анимация не активна
       setMarkerOpacity(0);
       markerOpacityRef.current = 0;
       return;
@@ -113,8 +122,9 @@ function GameMap({
     intervalRef.current = setInterval(() => {
       opacity = Math.min(opacity + 0.05, 1);
       setMarkerOpacity(opacity);
-      markerOpacityRef.current = opacity; // Сохраняем значение
-      if (opacity === 1) {
+      markerOpacityRef.current = opacity;
+
+      if (opacity >= 1) {
         clearInterval(intervalRef.current);
         timeoutId = setTimeout(() => setReturnTrigger((prev) => !prev), 1000);
       }
@@ -127,7 +137,7 @@ function GameMap({
     };
   }, [animateMarker, currentPoint, resetAnimation]);
 
-  /** Обработчик возврата к пользователю */
+  // Обработчик возврата к пользователю
   const handleReturnToUser = useCallback(() => setReturnTrigger(true), []);
 
   return (
@@ -141,16 +151,30 @@ function GameMap({
         url="https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.png"
       />
 
-      <InitialPosition userPosition={userPosition} />
-      <SmoothZoom
+      {/* Начальная позиция */}
+      <MapAnimation
+        type="initial"
+        position={userPosition}
+        zoomLevel={15}
+        duration={1}
+      />
+
+      {/* Зум к текущей точке */}
+      <MapAnimation
+        type="zoom"
         position={currentPoint?.coordinates}
         trigger={zoomTrigger}
-        resetZoom={resetZoom}
+        onComplete={resetZoom}
+        duration={2}
       />
-      <ReturnToUser
-        userPosition={userPosition}
+
+      {/* Возврат к пользователю */}
+      <MapAnimation
+        type="return"
+        position={userPosition}
         trigger={returnTrigger}
-        resetReturnTrigger={() => setReturnTrigger(false)}
+        onComplete={() => setReturnTrigger(false)}
+        duration={2}
       />
 
       {currentPoint && (
@@ -168,6 +192,7 @@ function GameMap({
           <Popup>Вы здесь</Popup>
         </Marker>
       )}
+
       <div className="map-button-container">
         <button className="return-button" onClick={handleReturnToUser}>
           📍
