@@ -7,15 +7,15 @@ import StoryModal from "../components/StoryModal";
 // Функция проверки расстояния до точки
 const checkDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371e3;
-  const φ1 = lat1 * Math.PI/180;
-  const φ2 = lat2 * Math.PI/180;
-  const Δφ = (lat2-lat1) * Math.PI/180;
-  const Δλ = (lon2-lon1) * Math.PI/180;
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-          Math.cos(φ1) * Math.cos(φ2) *
-          Math.sin(Δλ/2) * Math.sin(Δλ/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c;
 };
@@ -33,11 +33,12 @@ function Game() {
   const [generatedPoint, setGeneratedPoint] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isNearPoint, setIsNearPoint] = useState(false);
-  const [isStoryOpen, setIsStoryOpen] = useState(true); 
+  const [isStoryOpen, setIsStoryOpen] = useState(true);
   const [animateMarker, setAnimateMarker] = useState(false);
   const [zoomTrigger, setZoomTrigger] = useState(false);
   const maxDistance = 100;
 
+  // Загрузка данных из локал стораджа
   useEffect(() => {
     const savedHistory = localStorage.getItem("pointsHistory");
     if (savedHistory) {
@@ -57,6 +58,7 @@ function Game() {
     setIsLoaded(true);
   }, []);
 
+  // Создание первой рандомной точки
   useEffect(() => {
     if (isLoaded && !generatedPoint && currentIndex === 0) {
       const savedLocation = localStorage.getItem("userLocation");
@@ -74,35 +76,41 @@ function Game() {
     }
   }, [isLoaded, generatedPoint, currentIndex]);
 
-
+  // Вызов проверки на близость к точке
   useEffect(() => {
-  const checkUserProximity = () => {
-    const savedLocation = localStorage.getItem("userLocation");
-    if (!savedLocation) return;
+    const checkUserProximity = () => {
+      const savedLocation = localStorage.getItem("userLocation");
+      if (!savedLocation) return;
 
-    const { lat, lon } = JSON.parse(savedLocation);
-    const userCoords = [lat, lon];
+      const { lat, lon } = JSON.parse(savedLocation);
+      const userCoords = [lat, lon];
 
-    const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
+      const currentPoint =
+        currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
 
-    if (currentPoint) {
-      const distance = checkDistance(...userCoords, ...currentPoint.coordinates);
-      setIsNearPoint(distance <= maxDistance);
-    }
-  };
+      if (currentPoint) {
+        const distance = checkDistance(
+          ...userCoords,
+          ...currentPoint.coordinates
+        );
+        setIsNearPoint(distance <= maxDistance);
+      }
+    };
 
-  checkUserProximity(); // Проверяем сразу при загрузке
-  const interval = setInterval(checkUserProximity, 2000);
+    checkUserProximity(); // Проверяем сразу при загрузке
+    const interval = setInterval(checkUserProximity, 2000);
 
-  return () => clearInterval(interval);
-}, [isLoaded, generatedPoint, currentIndex]);
+    return () => clearInterval(interval);
+  }, [isLoaded, generatedPoint, currentIndex]);
 
+  // Обработчик нажатия кнопки для отображения истории и следующей точки
   const handleNextPoint = () => {
     if (!isNearPoint) return;
     setIsNearPoint(false);
     setIsStoryOpen(true); // Открываем модалку с историей
 
-    const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
+    const currentPoint =
+      currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
 
     if (!currentPoint) return;
 
@@ -124,11 +132,12 @@ function Game() {
     localStorage.setItem("currentIndex", newIndex);
 
     setTimeout(() => {
-    setAnimateMarker(false); // Помечаем точку пройденной, скрываем маркер
-  }, 1000);
+      setAnimateMarker(false); // Помечаем точку пройденной, скрываем маркер
+    }, 1000);
   };
 
-  const currentPoint = currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
+  const currentPoint =
+    currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
 
   return (
     <div className="game-container">
@@ -142,17 +151,18 @@ function Game() {
         />
       )}
 
-      {currentPoint && 
-      <GameMap 
-      currentPoint={currentPoint} 
-      animateMarker={animateMarker} 
-      resetAnimation={() => setAnimateMarker(false)}
-      zoomTrigger={zoomTrigger}
-      resetZoom={() => {
-        setZoomTrigger(false);
-        setAnimateMarker(true); // После завершения зума запускаем анимацию маркера
-      }}
-      />}
+      {currentPoint && (
+        <GameMap
+          currentPoint={currentPoint}
+          animateMarker={animateMarker}
+          resetAnimation={() => setAnimateMarker(false)}
+          zoomTrigger={zoomTrigger}
+          resetZoom={() => {
+            setZoomTrigger(false);
+            setAnimateMarker(true); // После завершения зума запускаем анимацию маркера
+          }}
+        />
+      )}
 
       <div className="controls-container">
         {isNearPoint ? (
@@ -160,9 +170,11 @@ function Game() {
             Узнать историю
           </button>
         ) : (
-          <p className="info-text">Пройдите до следующей точки для продолжения сюжета</p>
+          <p className="info-text">
+            Пройдите до следующей точки для продолжения сюжета
+          </p>
         )}
-        
+
         <button className="map-button" onClick={() => setIsHistoryOpen(true)}>
           История
         </button>
@@ -174,12 +186,12 @@ function Game() {
             <h3>История точек</h3>
             <button onClick={() => setIsHistoryOpen(false)}>×</button>
           </div>
-          
+
           {history.length === 0 ? (
             <p>Нет сохраненных точек</p>
           ) : (
             <ul className="history-list">
-              {history.map(item => (
+              {history.map((item) => (
                 <li key={item.id} className="history-item">
                   {item.text}
                 </li>
