@@ -155,7 +155,6 @@ function Game() {
         <GameMap
           currentPoint={currentPoint}
           animateMarker={animateMarker}
-          resetAnimation={() => setAnimateMarker(false)}
           zoomTrigger={zoomTrigger}
           resetZoom={() => {
             setZoomTrigger(false);

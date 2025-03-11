@@ -70,7 +70,6 @@ function MapAnimation({
 function GameMap({
   currentPoint,
   animateMarker,
-  resetAnimation,
   zoomTrigger,
   resetZoom,
 }) {
@@ -133,9 +132,8 @@ function GameMap({
     return () => {
       clearInterval(intervalRef.current);
       if (timeoutId) clearTimeout(timeoutId);
-      resetAnimation();
     };
-  }, [animateMarker, currentPoint, resetAnimation]);
+  }, [animateMarker, currentPoint]);
 
   // Обработчик возврата к пользователю
   const handleReturnToUser = useCallback(() => setReturnTrigger(true), []);
