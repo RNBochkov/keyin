@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import "./Game.css";
 import pointsData from "../data/points.json";
 import StoryModal from "../components/StoryModal";
+import Tutorial from "../components/Tutorial";
 
 // Функция проверки расстояния до точки
 const checkDistance = (lat1, lon1, lat2, lon2) => {
@@ -36,6 +37,7 @@ function Game() {
   const [isStoryOpen, setIsStoryOpen] = useState(true);
   const [animateMarker, setAnimateMarker] = useState(false);
   const [zoomTrigger, setZoomTrigger] = useState(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const maxDistance = 100;
 
   // Загрузка данных из локал стораджа
@@ -162,8 +164,15 @@ function Game() {
           onClose={() => {
             setIsStoryOpen(false);
             setZoomTrigger(true); // Запускаем зум, но НЕ появление маркера
+            if (currentIndex === 0) {
+              setIsTutorialOpen(true); // Открываем обучение после первого окна сюжетной истории
+            }
           }}
         />
+      )}
+
+      {isTutorialOpen && (
+        <Tutorial onClose={() => setIsTutorialOpen(false)} />
       )}
 
       {currentPoint && (
