@@ -20,7 +20,7 @@
   height: 150px; /* Размер круга */
   background-color: transparent;
   border-radius: 50%;
-  box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.7); /* Затемнение вокруг круга */
+  box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.8); /* Затемнение вокруг круга */
 
   z-index: 1001;
 }
