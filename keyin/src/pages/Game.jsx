@@ -38,6 +38,7 @@ function Game() {
   const [animateMarker, setAnimateMarker] = useState(false);
   const [zoomTrigger, setZoomTrigger] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [isSecondTutorialOpen, setIsSecondTutorialOpen] = useState(false); // Новое состояние для второго обучения
   const maxDistance = 100;
 
   // Загрузка данных из локал стораджа
@@ -171,7 +172,23 @@ function Game() {
         />
       )}
 
-      {isTutorialOpen && <Tutorial onClose={() => setIsTutorialOpen(false)} />}
+      {isTutorialOpen && (
+        <Tutorial
+          onClose={() => {
+            setIsTutorialOpen(false);
+            setIsSecondTutorialOpen(true); // Открываем второе обучение
+          }}
+          text="Это ваше местоположение"
+        />
+      )}
+
+      {isSecondTutorialOpen && (
+        <Tutorial
+          onClose={() => setIsSecondTutorialOpen(false)}
+          text="Когда вы достаточно близко к точке, вы можете узнать историю"
+          buttonPosition="controls-container"
+        />
+      )}
 
       {currentPoint && (
         <GameMap
