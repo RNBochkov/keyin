@@ -171,9 +171,7 @@ function Game() {
         />
       )}
 
-      {isTutorialOpen && (
-        <Tutorial onClose={() => setIsTutorialOpen(false)} />
-      )}
+      {isTutorialOpen && <Tutorial onClose={() => setIsTutorialOpen(false)} />}
 
       {currentPoint && (
         <GameMap
@@ -198,9 +196,11 @@ function Game() {
           </p>
         )}
 
-        <button className="map-button" onClick={() => setIsHistoryOpen(true)}>
-          История
-        </button>
+        {history.length > 0 && (
+          <button className="map-button" onClick={() => setIsHistoryOpen(true)}>
+            История
+          </button>
+        )}
       </div>
 
       {isHistoryOpen && (
