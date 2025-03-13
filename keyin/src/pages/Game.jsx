@@ -136,6 +136,21 @@ function Game() {
     }, 1000);
   };
 
+  // Функция сброса состояния игры
+  const resetGame = () => {
+    setCurrentIndex(0);
+    setHistory([]);
+    setGeneratedPoint(null);
+    setIsNearPoint(false);
+    setAnimateMarker(false);
+    setIsHistoryOpen(false);
+    setZoomTrigger(false);
+    setIsStoryOpen(true);
+    localStorage.removeItem("pointsHistory");
+    localStorage.removeItem("currentIndex");
+    localStorage.removeItem("generatedPoint");
+  };
+
   const currentPoint =
     currentIndex === 0 ? generatedPoint : pointsData[currentIndex - 1];
 
@@ -197,6 +212,9 @@ function Game() {
               ))}
             </ul>
           )}
+          <button className="reset-button" onClick={resetGame}>
+            Начать заново
+          </button>
         </div>
       )}
 

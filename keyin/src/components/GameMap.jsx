@@ -51,15 +51,31 @@ function MapAnimation({
       }[type];
 
       if (animationParams) {
-        map.flyTo(animationParams.center, animationParams.zoom, {
-          duration: duration,
-        });
+        // Проверка текущего уровня приближения
+        const currentZoom = map.getZoom();
+        const currentCenter = map.getCenter();
+        const targetCenter = L.latLng(...position);
 
-        // Вызов колбэка после анимации
-        if (onComplete) {
-          const timeout = duration * 1000;
-          const timerId = setTimeout(() => onComplete(), timeout);
-          return () => clearTimeout(timerId);
+        // Проверка, если текущий центр и целевой центр отличаются
+        const isCenterDifferent = currentCenter.distanceTo(targetCenter) > 10; // Пороговое значение для расстояния
+
+        if (isCenterDifferent || Math.abs(currentZoom - zoomLevel) > 0.1) {
+          // Пороговое значение для уровня приближения
+          map.flyTo(animationParams.center, animationParams.zoom, {
+            duration: duration,
+          });
+
+          // Вызов колбэка после анимации
+          if (onComplete) {
+            const timeout = duration * 1000;
+            const timerId = setTimeout(() => onComplete(), timeout);
+            return () => clearTimeout(timerId);
+          }
+        } else {
+          // Если текущий центр и целевой центр совпадают, и уровень приближения близок, вызываем колбэк сразу
+          if (onComplete) {
+            onComplete();
+          }
         }
       }
     }
