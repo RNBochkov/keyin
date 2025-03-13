@@ -47,6 +47,7 @@ function MapAnimation({
       const animationParams = {
         zoom: { center: position, zoom: zoomLevel },
         return: { center: position, zoom: zoomLevel },
+        zoomToMarker: { center: position, zoom: zoomLevel },
       }[type];
 
       if (animationParams) {
@@ -76,6 +77,7 @@ function GameMap({
   const [userPosition, setUserPosition] = useState(null);
   const [markerOpacity, setMarkerOpacity] = useState(0);
   const [returnTrigger, setReturnTrigger] = useState(false);
+  const [zoomToMarkerTrigger, setZoomToMarkerTrigger] = useState(false);
   const intervalRef = useRef(null);
   const markerOpacityRef = useRef(0);
 
@@ -138,6 +140,11 @@ function GameMap({
   // Обработчик возврата к пользователю
   const handleReturnToUser = useCallback(() => setReturnTrigger(true), []);
 
+  const handleZoomToMarker = useCallback(
+    () => setZoomToMarkerTrigger(true),
+    []
+  );
+
   return (
     <MapContainer
       center={[53.1959, 50.1002]}
@@ -175,6 +182,15 @@ function GameMap({
         duration={2}
       />
 
+      {/* Зум к точке по кнопке */}
+      <MapAnimation
+        type="zoomToMarker"
+        position={currentPoint?.coordinates}
+        trigger={zoomToMarkerTrigger}
+        onComplete={() => setZoomToMarkerTrigger(false)}
+        duration={2}
+      />
+
       {currentPoint && (
         <Marker
           position={currentPoint.coordinates}
@@ -194,6 +210,9 @@ function GameMap({
       <div className="map-button-container">
         <button className="return-button" onClick={handleReturnToUser}>
           📍
+        </button>
+        <button className="goal-button" onClick={handleZoomToMarker}>
+          🎯
         </button>
       </div>
     </MapContainer>

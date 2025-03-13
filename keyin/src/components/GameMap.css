@@ -11,7 +11,7 @@
     z-index: 1000;
 }
 
-.return-button {
+.return-button, .goal-button {
     background: rgba(255, 255, 255, 0.8);
     border: none;
     border-radius: 50%;
@@ -23,11 +23,11 @@
     transition: background 0.3s ease, transform 0.2s ease-in-out;
 }
 
-.return-button:hover {
+.return-button:hover, .goal-button:hover {
     background: rgba(255, 255, 255, 1);
     transform: scale(1.1);
 }
 
-.return-button:active {
+.return-button:active, .goal-button:active {
     transform: scale(0.9);
 }
