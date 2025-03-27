@@ -5,6 +5,7 @@ import pointsData from "../data/points.json";
 import StoryModal from "../components/StoryModal";
 import Tutorial from "../components/Tutorial";
 
+
 // Функция проверки расстояния до точки
 const checkDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371e3;

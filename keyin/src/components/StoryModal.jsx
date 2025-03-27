@@ -1,95 +1,115 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import storyData from "../data/story.json";
 import "./StoryModal.css";
 
-// Динамический импорт изображений
 const backgrounds = import.meta.glob("../assets/backgrounds/*", { eager: true });
 const characters = import.meta.glob("../assets/characters/*", { eager: true });
 
 const StoryModal = ({ currentPointId, onClose }) => {
   const [story, setStory] = useState(null);
-  const [currentText, setCurrentText] = useState(""); 
-  const [textIndex, setTextIndex] = useState(0); 
-  const [charIndex, setCharIndex] = useState(0); 
-  const [isTyping, setIsTyping] = useState(false); 
+  const [currentText, setCurrentText] = useState("");
+  const [textIndex, setTextIndex] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
+  const intervalRef = useRef(null);
 
+  // Сброс состояния при изменении точки квеста
   useEffect(() => {
     const currentStory = storyData.find((item) => item.id === currentPointId);
     setStory(currentStory);
     setTextIndex(0);
-    setCharIndex(0);
     setCurrentText("");
     setIsTyping(false);
+    
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [currentPointId]);
 
+  // Запуск анимации текста при изменении индекса
   useEffect(() => {
     if (story && !isTyping) {
       setCurrentText("");
-      setCharIndex(0);
       typeText();
     }
   }, [story, textIndex]);
 
+  // Анимация печати текста
   const typeText = () => {
     if (!story || textIndex >= story.text.length) return;
-  
+
     setIsTyping(true);
     const fullText = story.text[textIndex];
-  
     let i = 0;
-    const interval = setInterval(() => {
-      setCurrentText(fullText.slice(0, i + 1)); 
-  
+    
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    
+    intervalRef.current = setInterval(() => {
+      setCurrentText(fullText.slice(0, i + 1));
       if (i >= fullText.length - 1) {
-        clearInterval(interval);
+        clearInterval(intervalRef.current);
         setIsTyping(false);
       }
       i++;
-    }, 50);
+    }, 30);
   };
 
+  // Обработчик клика по кнопке
   const handleNextText = () => {
-    if (isTyping) return;
-    if (textIndex < story.text.length - 1) {
-      setTextIndex(textIndex + 1);
-      setCurrentText("");
+    if (isTyping) {
+      // Показать весь текст сразу
+      clearInterval(intervalRef.current);
+      setCurrentText(story.text[textIndex]);
+      setIsTyping(false);
     } else {
-      onClose(); 
+      // Переход к следующему тексту или закрытие
+      if (textIndex < story.text.length - 1) {
+        setTextIndex(prev => prev + 1);
+      } else {
+        onClose();
+      }
     }
   };
 
+  // Рендеринг интерфейса
   if (!story) return null;
 
-  
   const isColorBackground = story.background.includes("rgba") || story.background.includes("#");
-  const backgroundSrc = !isColorBackground ? backgrounds[`../assets/backgrounds/${story.background}`]?.default : null;
-
+  const backgroundSrc = !isColorBackground 
+    ? backgrounds[`../assets/backgrounds/${story.background}`]?.default 
+    : null;
+    
   const backgroundStyle = isColorBackground
     ? { backgroundColor: story.background }
-    : { backgroundImage: `url(${backgroundSrc})`, backgroundSize: "cover", backgroundPosition: "center" };
+    : { 
+        backgroundImage: `url(${backgroundSrc})`, 
+        backgroundSize: "cover", 
+        backgroundPosition: "center" 
+      };
 
-  
   const characterSrc = characters[`../assets/characters/${story.character}`]?.default;
 
   return (
     <div className="story-modal" style={backgroundStyle}>
-      {/* Персонаж (верхняя 50% экрана) */}
       {characterSrc && (
         <div className="character-container">
-          <img className="character" src={characterSrc} alt={story.characterName} />
+          <img 
+            className="character" 
+            src={characterSrc} 
+            alt={story.characterName} 
+            style={{ animation: isTyping ? "bounce 0.5s infinite" : "none" }}
+          />
         </div>
       )}
 
-      {/* Диалоговое окно (нижняя 50% экрана) */}
       <div className="dialog-box">
-        {/* Имя персонажа */}
         <div className="character-name">{story.characterName}</div>
-
-        {/* Постепенно печатаемый текст */}
         <p className="typing-text">{currentText}</p>
-
-        {/* Кнопка продолжить */}
-        <button className="close-button" onClick={handleNextText}>Продолжить</button>
+        <button 
+          className={`continue-button ${isTyping ? "skippable" : ""}`}
+          onClick={handleNextText}
+        >
+          {isTyping ? "▶ Пропустить" : "▶ Продолжить"}
+        </button>
       </div>
     </div>
   );

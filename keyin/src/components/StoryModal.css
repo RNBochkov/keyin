@@ -25,7 +25,6 @@
   z-index: -1;
 }
 
-
 .character-container {
   width: 100%;
   height: 50%;
@@ -45,6 +44,12 @@
 
 .character:hover {
   transform: scale(1.1);
+}
+
+/* Анимация подпрыгивания при печати */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
 /* Диалоговое окно (нижняя 50% экрана) */
@@ -68,7 +73,6 @@
   animation: fadeInText 1s ease-in-out;
 }
 
-
 /* Имя персонажа */
 .character-name {
   font-size: 1.5rem;
@@ -81,8 +85,8 @@
   border: 2px solid #8a7c6e;
 }
 
-/* Кнопка продолжить */
-.close-button {
+/* Обновленная кнопка продолжения */
+.continue-button {
   align-self: flex-end;
   padding: 10px 20px;
   background: linear-gradient(to bottom, #6b645b 0%, #403d38 100%);
@@ -96,14 +100,22 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
 }
 
-.close-button:hover {
+.continue-button.skippable {
+  background: linear-gradient(to bottom, #8a756b 0%, #604a42 100%);
+  border-color: #a89885;
+}
+
+.continue-button:hover {
   background: linear-gradient(to bottom, #80756b 0%, #504a42 100%);
   border-color: #a89885;
   box-shadow: 0 0 12px rgba(168, 152, 133, 0.4);
+  transform: scale(1.05);
 }
 
+/* Курсор печати */
 .typing-text::after {
   content: "|";
   display: inline-block;
@@ -117,7 +129,6 @@
     opacity: 0;
   }
 }
-
 
 /* Появление текста */
 @keyframes fadeInText {
@@ -144,7 +155,7 @@
     font-size: 1.2rem;
   }
 
-  .close-button {
+  .continue-button {
     font-size: 0.9rem;
     padding: 8px 15px;
   }
