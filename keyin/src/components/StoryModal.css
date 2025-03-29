@@ -4,7 +4,7 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -27,7 +27,7 @@
 
 .character-container {
   width: 100%;
-  height: 50%;
+  height: 40%;
   position: absolute; 
   bottom: 40%; 
   display: flex;
@@ -140,26 +140,7 @@
   }
 }
 
-/* Адаптивность */
-@media (max-width: 600px) {
-  .character {
-    width: 70%;
-  }
 
-  .dialog-box {
-    font-size: 1rem;
-    padding: 15px;
-  }
-
-  .character-name {
-    font-size: 1.2rem;
-  }
-
-  .continue-button {
-    font-size: 0.9rem;
-    padding: 8px 15px;
-  }
-}
 
 /* Стили репутации */
 .karma-display {
@@ -200,14 +181,14 @@
 .choices-container {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 8px;
   width: 100%;
 }
 
 .question-text {
   color: #d4c4a9;
   font-size: 1.2rem;
-  margin-bottom: 20px;
+  margin: 2vw;
 }
 
 .choice-button {
@@ -219,7 +200,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Cinzel Decorative', serif;
-  font-size: 100%;
+  font-size: 1rem;
 }
 
 .choice-button:hover {
@@ -246,4 +227,35 @@
 .reset-karma-button:hover {
   transform: translateY(-50%) rotate(360deg);
   color: #da0505;
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+  .character-container {
+    bottom: 50%;
+  }
+
+  .character {
+    width: 70%;
+  }
+
+  .dialog-box {
+    font-size: 1rem;
+    padding: 15px;
+    height: 50%;
+  }
+
+  .choices-container {
+    flex:1 0;
+    justify-self: center;
+  }
+
+  .character-name {
+    font-size: 1.2rem;
+  }
+
+  .continue-button {
+    font-size: 0.9rem;
+    padding: 1vw 2vw;
+  }
 }
